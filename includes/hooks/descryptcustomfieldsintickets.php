@@ -29,7 +29,32 @@ function decrypt_custom_fields_in_tickets($vars) {
     # Start the JavaScript code
     $script = "<script type='text/javascript'>
         $(document).ready(function() {
+        
+        const togglePasswordEye = '<i class=\"fa fa-eye toggle-password-eye\"></i>';
+        const togglePasswordEyeSlash = '<i class=\"fa fa-eye-slash toggle-password-eye\"></i>';
+
+        $(togglePasswordEyeSlash).insertAfter('#Secondary_Sidebar-Custom_Fields-Sensitive-Data > div:nth-child(2)');
+        $('#Secondary_Sidebar-Custom_Fields-Sensitive-Data > div:nth-child(2)').addClass('hidden-pass-input');
+      
+      
+/* NOTES 
+        1. modify above with your CSS class for the custom field
+        2. add following css to your custom stylesheet:
+        
+            .toggle-password-eye {
+                float: right;
+                top: -25px;
+                right: 10px;
+                position: relative;
+                cursor: pointer;
+                color: red !important;
+            }
+
+
+END NOTES */
+   
     ";
+    
 
     # Loop through each of the custom fields related to the ticket
     foreach ($vars['customfields'] as $field) {
@@ -58,7 +83,24 @@ function decrypt_custom_fields_in_tickets($vars) {
 
             # As we are looping through multiple fields, use JavaScript to alter the value on the page
             $script .= "
-                $('div[menuitemname=\"{$field['name']}\"]').children('div').eq(1).html('{$password}');
+
+                $('div[menuitemname=\"{$field['name']}\"]').children('div').eq(1).html('{$password}').hide().addClass( \"password\" );
+                
+
+                $('body').on('click', '.toggle-password-eye', function (e) {
+                  let password = $(this).prev('.hidden-pass-input');
+
+                  if (password.attr('type') === 'password') {
+                       $(this).parent().find(\".password\").hide();
+                       password.attr('type', 'text');
+                      $(this).addClass('fa-eye').removeClass('fa-eye-slash');
+                  } else {
+                      password.attr('type', 'password');
+                      $(this).addClass('fa-eye-slash').removeClass('fa-eye');
+                      $(this).parent().find(\".password\").show();
+                  }
+              })
+
             ";
 
         } else {
